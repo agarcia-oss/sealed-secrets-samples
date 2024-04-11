@@ -75,3 +75,39 @@ metadata:
     name: managed-secret
 type: Opaque
 ```
+## Managing the Sealed Secrets sealing keys
+
+Sealed Secrets sealing keys can be automatically managed by the Sealed Secrets controller. This is the recommended option for most users since, by default, the controller deals with all the aspects of renewing the key, managing key history, etc.
+
+However, here you'll find a few samples on how to manage the sealing key directly.
+
+```shell
+$ kubeseal --fetch-cert | tee cert.pem
+-----BEGIN CERTIFICATE-----
+TLS Certificate...
+-----END CERTIFICATE-----
+```
+
+```fetch-cert``` retrieves the encryption public key. Users without direct access to the cluster can use the following method to encrypt secrets locally:
+
+```yaml
+kubeseal --cert cert.pem -f simple-secret2.yaml
+kubeseal --cert cert.pem -f simple-secret2.yaml -o yaml
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: simple-secret2
+  namespace: default
+spec:
+  encryptedData:
+    key1: AgBZ3ul0C9qtfs4Yhy/CJQyu1fHZwO/AYnLXWFL3xORwUKKbIxTF/pm2iIAciomKa9cd7ixtphWi1cRHLTH0re4eT2dDwrhKBP3v0sZlXuFlanYzhkGpE3XtEBNfSkvMk9p5Z/akaE++1gp/0r37Shn9WyX4KfkFURcS3zp3XNwW2tjiaPJyNkOiczIVbl5VCMYsI2GduoY8ybbV/3tHxLn2md9BTrRT9IMJ7wRhl8Bg70K5JOTh7Ar8lqKcUTTXvTdk5TYuAVFoRO4ePlYBRua8z2QfkK7hPeWNtnuzFXDx1s/mbPjXIqOyqs4exXyowP8Ehq0F1g/OXeKQai4HfMg4rOBQU1fhOjVWHXXW62dmnOsZ1qUr1CzB8V8jXyncayejzOYm8wZwf6BZTYYmuhjSE8tg0knCPo3EGKUeuVAEn7D9N4kJU04KqsjTsubtjgvRjC5jjuyiiclK46O7yUhDbF5fZ3yDyH+kxz0atgw3kdQq39Wi2iK7qblrbwH/GPNbKOUMwZN3YLlr6ajfUClc41jP/q8DEMTyPqum8KxzbkHWN/qvDsEvWmPGK629vDENOeJMqK8NIMGv32VMve5jZ3js0BpgH7beQ0DOCbFFiEsShXVBRa6uHW8hEk8r6CaZ/BKJvEZLeH20xF/6H6OtLxzjpsg4TZoUvvL87zYlXswESQARGjWI5WgvM7Ettjhew8/E/1paFOQTyw==
+  template:
+    metadata:
+      annotations:
+        sealedsecrets.bitnami.com/managed: "true"
+      creationTimestamp: null
+      name: simple-secret2
+      namespace: default
+```
